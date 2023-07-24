@@ -26,7 +26,18 @@ const VideoForm = ({ setVideoData }) => {
     try {
       const response = await axios.post('https://creative-pebble-wilderness.glitch.me/api/transcript', { videoUrl: inputUrl });
     //   const response = await axios.post('http://localhost:5000/api/transcript', { videoUrl: inputUrl });
-      setVideoData(response.data);
+      const { videoUrl, transcript } = response.data;
+
+      if (transcript === null) {
+        setVideoData({
+          videoUrl,
+          transcript: 'Transcript not available for this video.',
+        });
+      } else {
+        setVideoData(response.data);
+      }
+    
+      // setVideoData(response.data);
       if (!response.data.transcript) {
         setError('Transcript not available for the entered YouTube URL.');
       }
