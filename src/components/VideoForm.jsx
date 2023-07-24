@@ -4,6 +4,7 @@ import axios from 'axios';
 const VideoForm = ({ setVideoData }) => {
   const [inputUrl, setInputUrl] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,6 +21,8 @@ const VideoForm = ({ setVideoData }) => {
       return;
     }
 
+    setIsLoading(true);
+
     try {
       const response = await axios.post('https://creative-pebble-wilderness.glitch.me/api/transcript', { videoUrl: inputUrl });
     //   const response = await axios.post('http://localhost:5000/api/transcript', { videoUrl: inputUrl });
@@ -30,6 +33,8 @@ const VideoForm = ({ setVideoData }) => {
     } catch (error) {
       console.log(error);
       setError('An error occurred while fetching the transcript.');
+    } finally {
+      setIsLoading(false); 
     }
   };
 
@@ -41,7 +46,9 @@ const VideoForm = ({ setVideoData }) => {
         onChange={(e) => setInputUrl(e.target.value)}
         placeholder="Enter YouTube Video URL"
       />
-      <button type="submit">Submit</button>
+      <button type="submit" disabled={isLoading}>
+        {isLoading ? 'Loading...' : 'Submit'}
+      </button>
       {error && <p className="error">{error}</p>}
     </form>
   );
