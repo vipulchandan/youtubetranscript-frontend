@@ -9,25 +9,34 @@ const VideoForm = ({ setVideoData }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(''); 
+    setIsLoading(true);
 
     if (!inputUrl.trim()) {
       setError('Please enter a YouTube video URL.');
+      setIsLoading(false);
       return;
     }
 
     const urlRegex = /^(https?:\/\/)?(www\.)?youtube\.com\/watch\?v=([^&]+).*/;
     if (!urlRegex.test(inputUrl)) {
       setError('Please enter a valid YouTube video URL.');
+      setIsLoading(false);
       return;
     }
 
-    setIsLoading(true);
 
     try {
       const response = await axios.post('https://creative-pebble-wilderness.glitch.me/api/transcript', { videoUrl: inputUrl });
-    //   const response = await axios.post('http://localhost:5000/api/transcript', { videoUrl: inputUrl });
-      const { videoUrl, transcript } = response.data;
+      // const response = await axios.post('http://localhost:5000/api/transcript', { videoUrl: inputUrl });
 
+      const { videoUrl, videoId, transcript, message } = response.data;
+
+      if (message === 'Video not found.') {
+        setError(message);
+        setIsLoading(false);
+        return;
+      }
+      
       if (transcript === null) {
         setVideoData({
           videoUrl,
@@ -43,7 +52,11 @@ const VideoForm = ({ setVideoData }) => {
       }
     } catch (error) {
       console.log(error);
-      setError('An error occurred while fetching the transcript.');
+      if (error.response && error.response.data.message === 'YouTube video is unavailable.') {
+        setError('This youtube video is unavailable.');
+      } else {
+        setError('An error occurred while fetching the transcript.');
+      }
     } finally {
       setIsLoading(false); 
     }
